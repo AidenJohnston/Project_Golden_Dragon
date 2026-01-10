@@ -1,0 +1,8 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+pd.read_csv('data.csv')
+
+import yfinance as yf
+
