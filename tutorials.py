@@ -37,8 +37,42 @@ def get_bazaar_buy_order_value(bazaar_data):
     return sum_coins
 
 
+# going through and getting only the values that I want for every product
+def get_bazaar_list(bazaar_data):
+    all_items = [] #initializing an empty list
+    for item_name, item_data in bazaar_data.get("products", {}).items(): #looping through every product
+        stats = item_data.get("quick_status", {}) #assigning the quick_status information to another variable
+        item_info = {
+            "productId": stats.get("productId"),
+            "sellPrice": stats.get("sellPrice"),
+            "sellMovingWeek": stats.get("sellMovingWeek"),
+            "buyPrice": stats.get("buyPrice"),
+            "buyMovingWeek": stats.get("buyMovingWeek")
+        } #yoinking the information that we want out of quick_status
+        all_items.append(item_info) #adding that set to the list
+
+    return all_items #return the list of every set
+
+def highest_sellMovingWeek(all_items):
+    sorted_list = sorted(
+        all_items,
+        key=lambda x: x["sellMovingWeek"],
+        reverse=True
+    )
+    return sorted_list[:20]
+
 
 bazaar_url = "https://api.hypixel.net/v2/skyblock/bazaar"
 
 #code
-pprint(get_bazaar_buy_order_value(get_bazaar_data()))
+# pprint(get_bazaar_buy_order_value(get_bazaar_data()))
+
+items = get_bazaar_list(get_bazaar_data())
+most_volatile = highest_sellMovingWeek(items)
+for item in most_volatile:
+    print(f"""Item: {item["productId"]} 
+      SellMovingWeek: {item["sellMovingWeek"]} 
+      BuyMovingWeek: {item["buyMovingWeek"]} 
+      BuyPrice: {item["buyPrice"]} 
+      SellPrice: {item["sellPrice"]}""")
+    #apparently you need to use triple quotes to use multiple lines, that's gay
