@@ -69,10 +69,12 @@ bazaar_url = "https://api.hypixel.net/v2/skyblock/bazaar"
 
 items = get_bazaar_list(get_bazaar_data())
 most_volatile = highest_sellMovingWeek(items)
+index = 1
 for item in most_volatile:
-    print(f"""Item: {item["productId"]} 
+    print(f"""Item {index}: {item["productId"]} 
       SellMovingWeek: {item["sellMovingWeek"]} 
       BuyMovingWeek: {item["buyMovingWeek"]} 
       BuyPrice: {item["buyPrice"]} 
       SellPrice: {item["sellPrice"]}""")
+    index += 1
     #apparently you need to use triple quotes to use multiple lines, that's gay
