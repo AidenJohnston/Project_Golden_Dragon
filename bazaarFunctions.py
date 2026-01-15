@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime, timedelta
 
 # JSON Get function (stolen from 0x26e)
 def get_info(call):
@@ -58,3 +59,18 @@ def highest_sellMovingWeek(all_items):
         reverse=True
     )
     return sorted_list[:20]
+
+#coflnet 1 week price history given item_tag
+def get_bazaar_history(item_tag, days=7):
+    """Get bazaar price history for the last N days"""
+    end = datetime.now()
+    start = end - timedelta(days=days)
+    
+    url = f"https://sky.coflnet.com/api/bazaar/{item_tag}/history"
+    params = {
+        "start": start.isoformat() + "Z",
+        "end": end.isoformat() + "Z"
+    }
+    
+    response = requests.get(url, params=params)
+    return response.json()
