@@ -33,8 +33,15 @@ def get_bazaar_history(item_tag, days=7):
 # Usage
 item = input("Enter ProductID: ")
 history = get_bazaar_history(item)
+information_week = []
 for entry in history:
     timestamp = entry.get('timestamp', 'Unknown Time')
     buy_price = entry.get('buy', 0)
     sell_price = entry.get('sell', 0)
     print(f"{timestamp}: Buy {buy_price}, Sell {sell_price}")
+    bidAsk_spread = ((buy_price - sell_price)/(buy_price)) * 100
+    information_week.append([timestamp, bidAsk_spread])
+
+df = pd.DataFrame(information_week, columns=["timestamp", "bidAsk_spread"])
+df.plot(kind="line", x="timestamp", y="bidAsk_spread")
+plt.show()
