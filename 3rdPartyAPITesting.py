@@ -1,6 +1,3 @@
-#time to scrape the forums for API's that people stopped maintaining
-
-
 #found the coflnet one (I stole this code from their docs)
 import requests
 from datetime import datetime, timedelta
