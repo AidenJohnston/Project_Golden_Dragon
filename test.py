@@ -37,8 +37,22 @@ plt.tight_layout()
 plt.show()
 
 
-
-
+#this looks like AIDS, I never wish a code review like this for my worst enemy
+import numpy as np
+df["log_return"] = np.log(df["mid_price"]).diff() # Log returns
+rf_annual = 0.0419 #4.19% risk-free-return according to the US Treasury
+periods_per_year = 365 * 12  # periods per year (12 entries per day, 365 days)
+rf_period = (1 + rf_annual) ** (1 / periods_per_year) - 1 # Convert annual rf -> per-period rf (compounding-consistent)
+df["excess_return"] = df["log_return"] - rf_period # Excess returns
+excess = df["excess_return"].dropna() # Drop the first NaN
+mean_excess = excess.mean()
+std_excess = excess.std(ddof=1)
+sharpe_period = mean_excess / std_excess
+sharpe_annual = sharpe_period * np.sqrt(periods_per_year)
+print("Mean excess return (per period):", mean_excess)
+print("Std dev excess return (per period):", std_excess)
+print("Sharpe (per period):", sharpe_period)
+print("Sharpe (annualized):", sharpe_annual)
 
 ### another function for plotting the bid/ask spread of the top 5 most instasold items
 #bf.bidAskSpread_plot(items)
