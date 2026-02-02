@@ -127,3 +127,12 @@ def bidAskSpread_plot(items):
     plt.tight_layout()
 
     plt.show()
+
+#calculated the bid/ask spread of each individual item
+def bidAskSpread(item):
+    buy_price = item.get('buyPrice')
+    sell_price = item.get('sellPrice')
+    if (buy_price == 0):
+        buy_price = sell_price
+    bidAsk_spread = ((buy_price - sell_price)/(buy_price)) * 100
+    return bidAsk_spread
