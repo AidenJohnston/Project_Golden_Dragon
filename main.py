@@ -21,6 +21,9 @@ elif risk_tolerance == "high":
 bazaar_url = "https://api.hypixel.net/v2/skyblock/bazaar"
 items = bf.get_bazaar_list(bf.get_bazaar_data(bazaar_url))
 
+# clear out the useless items
+#i'll do this one later
+
 ###number crunching
 #bid/ask spread
 bidAsk_spread = []
