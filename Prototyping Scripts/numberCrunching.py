@@ -1,5 +1,7 @@
 import numpy as np
+import json
 import requests
+from datetime import datetime, timedelta
 
 #Net Spread
 def netSpread(sell, buy):
@@ -27,11 +29,11 @@ def bsVolumeRatio(buyMovingWeek, sellMovingWeek):
 
 #Price History in the Last 24 Hours
 def getPriceHistory(productId):
-    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/history/day"
-    history = requests.get(request_URL)
+    request_URL = f"https://sky.coflnet.com/api/bazaar/{productId}/history/day"
+    history = (requests.get(request_URL)).json()
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buyPrice'])
+        priceHistory.append(entry.get('buy'))
     return priceHistory
 
 #Rolling Volatility (Last 24 Hours)
@@ -42,34 +44,34 @@ def rollingVolatility(productId):
 def variationCoefficient(productId):
     priceHistory = getPriceHistory(productId)
     rollingMeanPrice = np.mean(priceHistory)
-    rollingVolatility = rollingVolatility(priceHistory)
+    rollingVolatility = np.std(priceHistory)
     return ((rollingVolatility)/(rollingMeanPrice))
 
 #Z-Score
 def z_score(productId):
     #api stuff to get current price lmao
-    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
-    timestamp = datetime.now()
-    response = requests.get(request_URL, params=timestamp)
+    request_URL = f"https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
+    timestamp = datetime.now().isoformat() + "Z"
+    response = (requests.get(request_URL, params=timestamp)).json()
 
-    currentPrice = response['buyPrice']
+    currentPrice = response.get('buyPrice')
     priceHistory = getPriceHistory(productId) #so glad I already made this function
-    average = np.mean(priceHisotry)
+    average = np.mean(priceHistory)
     stDev = np.std(priceHistory)
     z_score = (currentPrice - average)/stDev
     return z_score
 
 #Price Momentum
 def priceMomentum(productId):
-    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
+    request_URL = f"https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
     
-    timestamp = datetime.now() - timedelta(hours=6)
-    response = requests.get(request_URL, params=timestamp)
-    price3SnapshotsAgo = response['buyPrice']
+    timestamp = (datetime.now() - timedelta(hours=6)).isoformat() + "Z"
+    response = (requests.get(request_URL, params=timestamp)).json()
+    price3SnapshotsAgo = response.get('buyPrice')
 
-    timestamp = datetime.now()
-    response = requests.get(request_URL, params=timestamp)
-    currentPrice = response['buyPrice']
+    timestamp = (datetime.now()).isoformat() + "Z"
+    response = (requests.get(request_URL, params=timestamp)).json()
+    currentPrice = response.get('buyPrice')
 
     return ((currentPrice/price3SnapshotsAgo) - 1)
 
@@ -83,10 +85,10 @@ def SMA_Crossover(productId):
         "start": start.isoformat() + "Z",
         "end": end.isoformat() + "Z"
     }
-    history = requests.get(request_URL, params=params)
+    history = (requests.get(request_URL, params=params)).json()
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buyPrice'])
+        priceHistory.append(entry['buy'])
     ThreeSSMean = np.mean(priceHistory)
     
     end = datetime.now()
@@ -95,10 +97,10 @@ def SMA_Crossover(productId):
         "start": start.isoformat() + "Z",
         "end": end.isoformat() + "Z"
     }
-    history = requests.get(request_URL, params=params)
+    history = (requests.get(request_URL, params=params)).json()
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buyPrice'])  
+        priceHistory.append(entry['buy'])  
     TwelveSSMean = np.mean(priceHistory)
 
     return (ThreeSSMean/TwelveSSMean)
@@ -113,23 +115,23 @@ def spreadStability(productId):
         "start": start.isoformat() + "Z",
         "end": end.isoformat() + "Z"
     }
-    history = requests.get(request_URL, params=params)
-    netSpread = []
+    history = (requests.get(request_URL, params=params)).json()
+    netSpreads_List = []
     for entry in history:
-        netSpread.append(netSpread(entry['sellPrice'], entry['buyPrice']))
+        netSpreads_List.append(netSpread(entry['sell'], entry['buy']))
     
-    return np.std(netSpread)
+    return np.std(netSpreads_List)
 
 #Market Depth Impact
 def marketDepthImpact(productId):
-    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
+    request_URL = f"https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
 
-    timestamp = datetime.now()
-    response = requests.get(request_URL, params=timestamp)
+    timestamp = datetime.now().isoformat() + "Z"
+    response = (requests.get(request_URL, params=timestamp)).json()
     orders = response['buyOrders']
     prices = []
     for order in orders:
-        prices.append(orders['pricePerUnit'])
+        prices.append(order['pricePerUnit'])
 
     maxBuy = prices[0]
     minBuy = prices[-1]
