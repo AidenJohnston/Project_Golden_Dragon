@@ -31,7 +31,7 @@ def getPriceHistory(productId):
     history = requests.get(request_URL)
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buy'])
+        priceHistory.append(entry['buyPrice'])
     return priceHistory
 
 #Rolling Volatility (Last 24 Hours)
@@ -46,8 +46,18 @@ def variationCoefficient(productId):
     return ((rollingVolatility)/(rollingMeanPrice))
 
 #Z-Score
-def z_score():
-    return #i'm gonna finish this one later too
+def z_score(productId):
+    #api stuff to get current price lmao
+    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
+    timestamp = datetime.now()
+    response = requests.get(request_URL, params=timestamp)
+
+    currentPrice = response['buyPrice']
+    priceHistory = getPriceHistory(productId) #so glad I already made this function
+    average = np.mean(priceHisotry)
+    stDev = np.std(priceHistory)
+    z_score = (currentPrice - average)/stDev
+    return z_score
 
 #Price Momentum
 def priceMomentum(productId):
@@ -55,11 +65,11 @@ def priceMomentum(productId):
     
     timestamp = datetime.now() - timedelta(hours=6)
     response = requests.get(request_URL, params=timestamp)
-    price3SnapshotsAgo = response['buy']
+    price3SnapshotsAgo = response['buyPrice']
 
     timestamp = datetime.now()
     response = requests.get(request_URL, params=timestamp)
-    currentPrice = response['buy']
+    currentPrice = response['buyPrice']
 
     return ((currentPrice/price3SnapshotsAgo) - 1)
 
@@ -76,7 +86,7 @@ def SMA_Crossover(productId):
     history = requests.get(request_URL, params=params)
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buy'])
+        priceHistory.append(entry['buyPrice'])
     ThreeSSMean = np.mean(priceHistory)
     
     end = datetime.now()
@@ -88,7 +98,7 @@ def SMA_Crossover(productId):
     history = requests.get(request_URL, params=params)
     priceHistory = []
     for entry in history:
-        priceHistory.append(entry['buy'])  
+        priceHistory.append(entry['buyPrice'])  
     TwelveSSMean = np.mean(priceHistory)
 
     return (ThreeSSMean/TwelveSSMean)
@@ -106,11 +116,26 @@ def spreadStability(productId):
     history = requests.get(request_URL, params=params)
     netSpread = []
     for entry in history:
-        netSpread.append(netSpread(entry['sell'], entry['buy']))
+        netSpread.append(netSpread(entry['sellPrice'], entry['buyPrice']))
     
     return np.std(netSpread)
 
 #Market Depth Impact
 def marketDepthImpact(productId):
-    return #i'll finish this one later
+    request_URL = "https://sky.coflnet.com/api/bazaar/{productId}/snapshot"
+
+    timestamp = datetime.now()
+    response = requests.get(request_URL, params=timestamp)
+    orders = response['buyOrders']
+    prices = []
+    for order in orders:
+        prices.append(orders['pricePerUnit'])
+
+    maxBuy = prices[0]
+    minBuy = prices[-1]
+    currentPrice = response['buyPrice']
+    
+    marketDepthImpact = (maxBuy - minBuy)/(currentPrice)
+
+    return marketDepthImpact
 
